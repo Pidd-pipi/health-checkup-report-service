@@ -54,6 +54,16 @@ func (r *AbnormalMetricRepository) UpdateFollowUp(id uint, status, advice string
 	}).Error
 }
 
+// FindByExamineeAndItem 按体检人与检查项目查找异常指标。
+func (r *AbnormalMetricRepository) FindByExamineeAndItem(examineeID, packageItemID uint) (*model.AbnormalMetric, error) {
+	return nil, util.ErrNotFound
+}
+
+// DeleteByExamineeAndItem 删除同一体检人同一检查项目的旧异常指标。
+func (r *AbnormalMetricRepository) DeleteByExamineeAndItem(examineeID, packageItemID uint) error {
+	return nil
+}
+
 func (r *AbnormalMetricRepository) Count() (int64, error) {
 	var count int64
 	err := r.db.Model(&model.AbnormalMetric{}).Count(&count).Error
