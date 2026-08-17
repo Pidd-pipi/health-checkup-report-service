@@ -101,6 +101,13 @@ type FollowUpRequest struct {
 	Advice  string `json:"specialist_advice" binding:"max=500"`
 }
 
+// AbnormalMetricListQuery 异常指标列表查询参数。
+type AbnormalMetricListQuery struct {
+	ExamineeID uint `json:"examinee_id" form:"examinee_id"`
+	Page       int  `json:"page" form:"page"`
+	PageSize   int  `json:"page_size" form:"page_size"`
+}
+
 // TokenResponse 令牌响应。
 type TokenResponse struct {
 	Token string      `json:"token"`

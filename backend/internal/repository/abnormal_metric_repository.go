@@ -32,8 +32,12 @@ func (r *AbnormalMetricRepository) List(examineeID uint, page, pageSize int) ([]
 	if err := q.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
+	query := r.db.Preload("PackageItem").Model(&model.AbnormalMetric{})
+	if examineeID > 0 {
+		query = query.Where("examinee_id = ?", examineeID)
+	}
 	var items []model.AbnormalMetric
-	err := r.db.Preload("PackageItem").Where("examinee_id = ?", examineeID).Order("id desc").Offset((page-1)*pageSize).Limit(pageSize).Find(&items).Error
+	err := query.Order("id desc").Offset((page-1)*pageSize).Limit(pageSize).Find(&items).Error
 	return items, total, err
 }
 

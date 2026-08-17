@@ -22,14 +22,17 @@ func NewAbnormalMetricHandler(svc *service.AbnormalMetricService, log *slog.Logg
 
 // List 异常指标列表。
 func (h *AbnormalMetricHandler) List(c *gin.Context) {
-	page := parseQueryInt(c.Query("page"), 1)
-	pageSize := parseQueryInt(c.Query("page_size"), 20)
-	items, total, err := h.svc.List(c.Request.Context(), parseUint(c.Query("examinee_id")), page, pageSize)
+	query := dto.AbnormalMetricListQuery{
+		ExamineeID: parseUint(c.Query("examinee_id")),
+		Page:       parseQueryInt(c.Query("page"), 1),
+		PageSize:   parseQueryInt(c.Query("page_size"), 20),
+	}
+	items, total, err := h.svc.ListByQuery(c.Request.Context(), query)
 	if err != nil {
 		c.Error(err)
 		return
 	}
-	util.OK(c, util.PageData{List: items, Total: total, Page: page, Size: pageSize})
+	util.OK(c, util.PageData{List: items, Total: total, Page: query.Page, Size: query.PageSize})
 }
 
 // UpdateFollowUp 更新复查跟踪。

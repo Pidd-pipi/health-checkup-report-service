@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/blueship581/gbcheckup/internal/constants"
+	"github.com/blueship581/gbcheckup/internal/dto"
 	"github.com/blueship581/gbcheckup/internal/model"
 	"github.com/blueship581/gbcheckup/internal/repository"
 	"github.com/blueship581/gbcheckup/internal/util"
@@ -25,7 +26,18 @@ func NewAbnormalMetricService(repo *repository.AbnormalMetricRepository, log *sl
 
 // List 分页查询异常指标。
 func (s *AbnormalMetricService) List(ctx context.Context, examineeID uint, page, pageSize int) ([]model.AbnormalMetric, int64, error) {
+	if page < 1 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
 	return s.repo.List(examineeID, page, pageSize)
+}
+
+// ListByQuery 按查询参数分页查询异常指标。
+func (s *AbnormalMetricService) ListByQuery(ctx context.Context, query dto.AbnormalMetricListQuery) ([]model.AbnormalMetric, int64, error) {
+	return s.List(ctx, query.ExamineeID, query.Page, query.PageSize)
 }
 
 // UpdateFollowUp 更新复查跟踪与专科建议。
