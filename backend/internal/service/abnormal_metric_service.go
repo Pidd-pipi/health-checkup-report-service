@@ -30,7 +30,7 @@ func (s *AbnormalMetricService) List(ctx context.Context, examineeID uint, page,
 
 // UpdateFollowUp 更新复查跟踪与专科建议。
 func (s *AbnormalMetricService) UpdateFollowUp(ctx context.Context, id uint, status, advice string) (*model.AbnormalMetric, error) {
-	if status != constants.FollowUpPending && status != constants.FollowUpDone {
+	if !constants.IsValidFollowUpStatus(status) {
 		return nil, util.BadRequest("复查状态（AbnormalMetric.follow_up_status）不合法", errors.New("invalid status"))
 	}
 	if err := s.repo.UpdateFollowUp(id, status, advice); err != nil {

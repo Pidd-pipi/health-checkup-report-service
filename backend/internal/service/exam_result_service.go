@@ -65,6 +65,13 @@ func (s *ExamResultService) Enter(ctx context.Context, resultID, doctorID uint, 
 				AbnormalLevel: GuessAbnormalLevel(input.ResultValue), Value: input.ResultValue, RefValueRange: res.PackageItem.RefValueRange,
 				TrendJSON: "[]", FollowUpStatus: constants.FollowUpPending,
 			}
+			if _, findErr := s.metricRepo.WithTx(tx).FindByExamineeAndItem(res.ExamineeID, res.PackageItemID); findErr == nil {
+				if err := s.metricRepo.WithTx(tx).DeleteByExamineeAndItem(res.ExamineeID, res.PackageItemID); err != nil {
+					return fmt.Errorf("delete old abnormal metric: %w", err)
+				}
+			} else if !errors.Is(findErr, util.ErrNotFound) {
+				return fmt.Errorf("find old abnormal metric: %w", findErr)
+			}
 			if err := s.metricRepo.WithTx(tx).Create(metric); err != nil {
 				return fmt.Errorf("create abnormal metric: %w", err)
 			}

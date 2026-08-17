@@ -5,8 +5,8 @@ import "time"
 // AbnormalMetric 异常指标。
 type AbnormalMetric struct {
 	ID              uint      `gorm:"primaryKey" json:"id"`
-	ExamineeID      uint      `gorm:"index;not null" json:"examinee_id"`
-	PackageItemID   uint      `gorm:"index;not null" json:"package_item_id"`
+	ExamineeID      uint      `gorm:"index:idx_abnormal_examinee_item,not null" json:"examinee_id"`
+	PackageItemID   uint      `gorm:"index:idx_abnormal_examinee_item,not null" json:"package_item_id"`
 	AbnormalLevel   string    `gorm:"size:20;not null" json:"abnormal_level"`
 	Value           string    `gorm:"size:100" json:"value"`
 	RefValueRange   string    `gorm:"size:100" json:"ref_value_range"`

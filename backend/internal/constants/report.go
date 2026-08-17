@@ -49,6 +49,11 @@ const (
 	PackageOther   = "other"   // 其他
 )
 
+// IsValidFollowUpStatus 判断复查状态是否合法。
+func IsValidFollowUpStatus(status string) bool {
+	return status == FollowUpPending || status == FollowUpDone
+}
+
 // GroupOrderStatus 团检订单状态。
 const (
 	GroupOrderPending   = "pending"

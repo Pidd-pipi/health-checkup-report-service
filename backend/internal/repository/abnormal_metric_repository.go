@@ -56,12 +56,19 @@ func (r *AbnormalMetricRepository) UpdateFollowUp(id uint, status, advice string
 
 // FindByExamineeAndItem 按体检人与检查项目查找异常指标。
 func (r *AbnormalMetricRepository) FindByExamineeAndItem(examineeID, packageItemID uint) (*model.AbnormalMetric, error) {
-	return nil, util.ErrNotFound
+	var m model.AbnormalMetric
+	if err := r.db.Where("examinee_id = ? AND package_item_id = ?", examineeID, packageItemID).First(&m).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, util.ErrNotFound
+		}
+		return nil, err
+	}
+	return &m, nil
 }
 
 // DeleteByExamineeAndItem 删除同一体检人同一检查项目的旧异常指标。
 func (r *AbnormalMetricRepository) DeleteByExamineeAndItem(examineeID, packageItemID uint) error {
-	return nil
+	return r.db.Where("examinee_id = ? AND package_item_id = ?", examineeID, packageItemID).Delete(&model.AbnormalMetric{}).Error
 }
 
 func (r *AbnormalMetricRepository) Count() (int64, error) {
