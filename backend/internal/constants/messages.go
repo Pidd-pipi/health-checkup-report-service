@@ -20,6 +20,7 @@ const (
 	MsgLoginFailed      = "手机号或密码（User）错误"
 	MsgRoleForbidden    = "当前角色（UserRole）无权执行该操作"
 	MsgPackageNotFound  = "体检套餐（Package）不存在"
+	MsgPackageStatusInvalid = "套餐状态（Package.status）不合法"
 	MsgExamineeNotFound = "体检人（Examinee）不存在"
 	MsgRegNotFound      = "体检登记（Registration）不存在"
 	MsgResultNotFound   = "检查结果（ExamResult）不存在"

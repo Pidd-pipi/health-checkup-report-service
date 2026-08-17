@@ -29,6 +29,15 @@ type PackageRequest struct {
 	Description string  `json:"description" binding:"max=500"`
 }
 
+// PackageUpdateRequest 套餐部分更新请求，未传字段保持原值。
+type PackageUpdateRequest struct {
+	Name        *string  `json:"name" binding:"omitempty,max=100"`
+	PackageType *string  `json:"package_type" binding:"omitempty,oneof=entry annual premium other"`
+	Price       *float64 `json:"price" binding:"omitempty,gte=0"`
+	Status      *string  `json:"status" binding:"omitempty,oneof=active inactive"`
+	Description *string  `json:"description" binding:"omitempty,max=500"`
+}
+
 // PackageItemRequest 检查项目请求。
 type PackageItemRequest struct {
 	ItemName      string `json:"item_name" binding:"required,max=100"`

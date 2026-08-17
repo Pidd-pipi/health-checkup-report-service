@@ -62,12 +62,18 @@ func (h *PackageHandler) Detail(c *gin.Context) {
 // Update 更新套餐。
 func (h *PackageHandler) Update(c *gin.Context) {
 	id := parseUint(c.Param("id"))
-	var req dto.PackageRequest
+	var req dto.PackageUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(util.BadRequest("套餐（Package）参数不合法", err))
 		return
 	}
-	pkg, err := h.svc.Update(c.Request.Context(), id, req.Name, req.PackageType, req.Price, req.Status, req.Description)
+	pkg, err := h.svc.UpdatePartial(c.Request.Context(), id, service.PackageUpdate{
+		Name:        req.Name,
+		PackageType: req.PackageType,
+		Price:       req.Price,
+		Status:      req.Status,
+		Description: req.Description,
+	})
 	if err != nil {
 		c.Error(err)
 		return

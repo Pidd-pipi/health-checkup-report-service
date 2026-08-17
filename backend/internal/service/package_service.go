@@ -34,8 +34,38 @@ func (s *PackageService) Create(ctx context.Context, name, packageType string, p
 	return pkg, nil
 }
 
+// PackageUpdate 套餐更新字段。未设置的字段保持原值。
+type PackageUpdate struct {
+	Name        *string
+	PackageType *string
+	Price       *float64
+	Status      *string
+	Description *string
+}
+
 // Update 更新套餐。
 func (s *PackageService) Update(ctx context.Context, id uint, name, packageType string, price float64, status, description string) (*model.Package, error) {
+	in := PackageUpdate{}
+	if name != "" {
+		in.Name = &name
+	}
+	if packageType != "" {
+		in.PackageType = &packageType
+	}
+	if price > 0 {
+		in.Price = &price
+	}
+	if status != "" {
+		in.Status = &status
+	}
+	if description != "" {
+		in.Description = &description
+	}
+	return s.UpdatePartial(ctx, id, in)
+}
+
+// UpdatePartial 按需更新套餐字段。
+func (s *PackageService) UpdatePartial(ctx context.Context, id uint, in PackageUpdate) (*model.Package, error) {
 	pkg, err := s.pkgRepo.FindByID(id)
 	if err != nil {
 		if errors.Is(err, util.ErrNotFound) {
@@ -43,17 +73,24 @@ func (s *PackageService) Update(ctx context.Context, id uint, name, packageType 
 		}
 		return nil, err
 	}
-	if name != "" {
-		pkg.Name = name
+	if in.Name != nil {
+		pkg.Name = *in.Name
 	}
-	if packageType != "" {
-		pkg.PackageType = packageType
+	if in.PackageType != nil {
+		pkg.PackageType = *in.PackageType
 	}
-	pkg.Price = price
-	if status != "" {
-		pkg.Status = status
+	if in.Price != nil {
+		pkg.Price = *in.Price
 	}
-	pkg.Description = description
+	if in.Status != nil {
+		if *in.Status != constants.PackageActive && *in.Status != constants.PackageInactive {
+			return nil, util.NewAppError(constants.CodePackageStatusInvalid, 400, constants.MsgPackageStatusInvalid, errors.New("invalid package status"))
+		}
+		pkg.Status = *in.Status
+	}
+	if in.Description != nil {
+		pkg.Description = *in.Description
+	}
 	if err := s.pkgRepo.Update(pkg); err != nil {
 		return nil, util.LogError(s.log, constants.LOG_PACKAGE_UPDATED, fmt.Errorf("update package: %w", err))
 	}
