@@ -50,6 +50,24 @@ func (r *ExamResultRepository) ListByRegistration(regID uint) ([]model.ExamResul
 	return items, err
 }
 
+// ListEnteredByRegistration 只返回已录入或已审核的检查结果，报告不应包含待录入项。
+func (r *ExamResultRepository) ListEnteredByRegistration(regID uint) ([]model.ExamResult, error) {
+	var items []model.ExamResult
+	err := r.db.Preload("PackageItem").
+		Where("registration_id = ? AND status IN ?", regID, []string{"entered", "reviewed"}).
+		Order("id asc").Find(&items).Error
+	return items, err
+}
+
+// CountPendingByRegistration 统计待录入检查结果数量。
+func (r *ExamResultRepository) CountPendingByRegistration(regID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.ExamResult{}).
+		Where("registration_id = ? AND status NOT IN ?", regID, []string{"entered", "reviewed"}).
+		Count(&count).Error
+	return count, err
+}
+
 func (r *ExamResultRepository) ListPending(page, pageSize int) ([]model.ExamResult, int64, error) {
 	var total int64
 	if err := r.db.Model(&model.ExamResult{}).Where("status != ?", "reviewed").Count(&total).Error; err != nil {

@@ -57,7 +57,14 @@ func (s *ReportService) Generate(ctx context.Context, reportID, doctorID uint, c
 	if report.Status != constants.ReportDraft && report.Status != constants.ReportGenerated {
 		return nil, util.NewAppError(constants.CodeReportStatus, 409, constants.MsgReportStatusInvalid, errors.New("status not draft"))
 	}
-	results, err := s.resultRepo.ListByRegistration(report.RegistrationID)
+	pending, err := s.resultRepo.CountPendingByRegistration(report.RegistrationID)
+	if err != nil {
+		return nil, err
+	}
+	if pending > 0 {
+		return nil, util.NewAppError(constants.CodeResultNotEntered, 409, constants.MsgResultNotEntered, errors.New("pending results exist"))
+	}
+	results, err := s.resultRepo.ListEnteredByRegistration(report.RegistrationID)
 	if err != nil {
 		return nil, err
 	}
