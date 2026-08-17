@@ -130,5 +130,19 @@ func (s *PackageService) UpdateItem(ctx context.Context, id uint, data *model.Pa
 
 // DeleteItem 删除检查项目。
 func (s *PackageService) DeleteItem(ctx context.Context, id uint) error {
+	if _, err := s.itemRepo.FindByID(id); err != nil {
+		return util.NotFoundError("检查项目（PackageItem）不存在", err)
+	}
+	examCount, err := s.itemRepo.CountExamResults(id)
+	if err != nil {
+		return err
+	}
+	metricCount, err := s.itemRepo.CountAbnormalMetrics(id)
+	if err != nil {
+		return err
+	}
+	if examCount > 0 || metricCount > 0 {
+		return util.NewAppError(constants.CodePackageItemInUse, 409, constants.MsgPackageItemInUse, errors.New("package item in use"))
+	}
 	return s.itemRepo.Delete(id)
 }
