@@ -54,7 +54,13 @@ func (s *UserService) Register(ctx context.Context, phone, password, name string
 
 // Login 登录。
 func (s *UserService) Login(ctx context.Context, phone, password string) (*model.User, string, error) {
-	user, _ := s.repo.FindByPhone(phone)
+	user, err := s.repo.FindByPhone(phone)
+	if err != nil {
+		return nil, "", util.LogError(s.log, constants.LOG_USER_LOGIN_FAILED, fmt.Errorf("find user: %w", err))
+	}
+	if user == nil {
+		return nil, "", util.UnauthorizedError(constants.MsgLoginFailed, errors.New("user not found"))
+	}
 	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) != nil {
 		return nil, "", util.UnauthorizedError(constants.MsgLoginFailed, errors.New("password mismatch"))
 	}
@@ -80,7 +86,13 @@ func (s *UserService) GetByID(ctx context.Context, id uint) (*model.User, error)
 
 // UpdateProfile 更新资料。
 func (s *UserService) UpdateProfile(ctx context.Context, id uint, name, avatar, department string) (*model.User, error) {
-	user, _ := s.repo.FindByID(id)
+	user, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, util.LogError(s.log, constants.LOG_USER_PROFILE_UPDATED, fmt.Errorf("find user: %w", err))
+	}
+	if user == nil {
+		return nil, util.NotFoundError(constants.MsgUserNotFound, errors.New("user not found"))
+	}
 	if name != "" {
 		user.Name = name
 	}
