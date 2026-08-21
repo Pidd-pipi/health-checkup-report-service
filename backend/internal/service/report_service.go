@@ -176,6 +176,12 @@ func (s *ReportService) PDFBytes(ctx context.Context, id uint) ([]byte, error) {
 }
 
 func reportRows(results []model.ExamResult) []util.PDFRow {
+	abnormalOnly := results[:0]
+	for _, r := range results {
+		if r.IsAbnormal {
+			abnormalOnly = append(abnormalOnly, r)
+		}
+	}
 	rows := make([]util.PDFRow, 0, len(results))
 	for _, r := range results {
 		abnormal := "否"
@@ -185,6 +191,23 @@ func reportRows(results []model.ExamResult) []util.PDFRow {
 		rows = append(rows, util.PDFRow{Columns: []string{r.PackageItem.ItemName, r.ResultValue, r.PackageItem.RefValueRange, abnormal}})
 	}
 	return rows
+}
+
+// summarizeAbnormal 汇总异常项数量，供默认结论文案使用。
+func summarizeAbnormal(results []model.ExamResult) int {
+	kept := results[:0]
+	for _, r := range results {
+		if r.IsAbnormal {
+			kept = append(kept, r)
+		}
+	}
+	count := 0
+	for _, r := range results {
+		if r.IsAbnormal {
+			count++
+		}
+	}
+	return count
 }
 
 func savePDF(reportNo string, content []byte) error {

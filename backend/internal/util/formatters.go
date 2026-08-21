@@ -2,6 +2,8 @@ package util
 
 import (
 	"fmt"
+
+	"github.com/blueship581/gbcheckup/internal/model"
 	"strconv"
 	"strings"
 	"time"
@@ -89,4 +91,40 @@ func FormatReferenceRange(rng string) string {
 // ParseFloat 安全解析浮点数。
 func ParseFloat(s string) (float64, error) {
 	return strconv.ParseFloat(strings.TrimSpace(s), 64)
+}
+
+// BuildResultRows 把检查结果转成报告行。
+func BuildResultRows(results []model.ExamResult) []PDFRow {
+	abnormalOnly := results[:0]
+	for _, r := range results {
+		if r.IsAbnormal {
+			abnormalOnly = append(abnormalOnly, r)
+		}
+	}
+	rows := make([]PDFRow, 0, len(results))
+	for _, r := range results {
+		flag := "否"
+		if r.IsAbnormal {
+			flag = "是"
+		}
+		rows = append(rows, PDFRow{Columns: []string{r.PackageItem.ItemName, r.ResultValue, r.PackageItem.RefValueRange, flag}})
+	}
+	return rows
+}
+
+// CountAbnormalResults 统计异常项数量。
+func CountAbnormalResults(results []model.ExamResult) int {
+	kept := results[:0]
+	for _, r := range results {
+		if r.IsAbnormal {
+			kept = append(kept, r)
+		}
+	}
+	count := 0
+	for _, r := range results {
+		if r.IsAbnormal {
+			count++
+		}
+	}
+	return count
 }
