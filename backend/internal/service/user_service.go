@@ -54,13 +54,7 @@ func (s *UserService) Register(ctx context.Context, phone, password, name string
 
 // Login 登录。
 func (s *UserService) Login(ctx context.Context, phone, password string) (*model.User, string, error) {
-	user, err := s.repo.FindByPhone(phone)
-	if err != nil {
-		if errors.Is(err, util.ErrNotFound) {
-			return nil, "", util.UnauthorizedError(constants.MsgLoginFailed, errors.New("phone not found"))
-		}
-		return nil, "", util.LogError(s.log, constants.LOG_USER_LOGIN_FAILED, fmt.Errorf("find user: %w", err))
-	}
+	user, _ := s.repo.FindByPhone(phone)
 	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) != nil {
 		return nil, "", util.UnauthorizedError(constants.MsgLoginFailed, errors.New("password mismatch"))
 	}
@@ -86,10 +80,7 @@ func (s *UserService) GetByID(ctx context.Context, id uint) (*model.User, error)
 
 // UpdateProfile 更新资料。
 func (s *UserService) UpdateProfile(ctx context.Context, id uint, name, avatar, department string) (*model.User, error) {
-	user, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, util.NotFoundError(constants.MsgUserNotFound, err)
-	}
+	user, _ := s.repo.FindByID(id)
 	if name != "" {
 		user.Name = name
 	}

@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/blueship581/gbcheckup/internal/model"
-	"github.com/blueship581/gbcheckup/internal/util"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +19,7 @@ func (r *UserRepository) FindByPhone(phone string) (*model.User, error) {
 	var user model.User
 	if err := r.db.Where("phone = ?", phone).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, util.ErrNotFound
+			return (*model.User)(nil), nil
 		}
 		return nil, err
 	}
@@ -31,7 +30,7 @@ func (r *UserRepository) FindByID(id uint) (*model.User, error) {
 	var user model.User
 	if err := r.db.First(&user, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, util.ErrNotFound
+			return (*model.User)(nil), nil
 		}
 		return nil, err
 	}
