@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/blueship581/gbcheckup/internal/model"
 	"gorm.io/gorm"
 )
@@ -26,7 +28,7 @@ func (r *GroupOrderRepository) List(page, pageSize int) ([]model.GroupOrder, int
 func (r *GroupOrderRepository) FindByID(id uint) (*model.GroupOrder, error) {
 	var o model.GroupOrder
 	if err := r.db.Preload("Enterprise").Preload("Package").First(&o, id).Error; err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query group order %d: %v", id, err)
 	}
 	return &o, nil
 }
