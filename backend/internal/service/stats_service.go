@@ -42,6 +42,14 @@ func (s *StatsService) Dashboard(ctx context.Context) (*model.DashboardStats, er
 	stats.PackageSold, _ = s.regRepo.CountGroupByPackage()
 	stats.DeptWorkload, _ = s.itemRepo.CountGroupByDepartment()
 	stats.AbnormalTop, _ = s.resultRepo.CountAbnormalGroupByItem()
+
+	var packageSoldSummary map[string]int64
+	for _, pc := range stats.PackageSold {
+		packageSoldSummary[pc.Name] += pc.Count
+	}
+	stats.PackageSoldSummary = packageSoldSummary
+	stats.Summarize()
+
 	s.log.InfoContext(ctx, constants.LOG_STATS_DASHBOARD, "registrations", stats.RegistrationCount)
 	return stats, nil
 }
