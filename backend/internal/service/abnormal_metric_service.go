@@ -30,8 +30,16 @@ func (s *AbnormalMetricService) List(ctx context.Context, examineeID uint, page,
 
 // UpdateFollowUp 更新复查跟踪与专科建议。
 func (s *AbnormalMetricService) UpdateFollowUp(ctx context.Context, id uint, status, advice string) (*model.AbnormalMetric, error) {
-	if status != constants.FollowUpPending && status != constants.FollowUpDone {
+	if status != constants.FollowUpPending && status != constants.FollowUpProcessing && status != constants.FollowUpDone {
 		return nil, util.BadRequest("复查状态（AbnormalMetric.follow_up_status）不合法", errors.New("invalid status"))
+	}
+	current, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+	// done 为终态：一旦完成，禁止再回退到 pending/processing，否则会出现"改完成后又变回待处理"。
+	if current.FollowUpStatus == constants.FollowUpDone && status != constants.FollowUpDone {
+		return nil, util.ConflictError("复查跟踪已完成（AbnormalMetric.follow_up_status=done），不可改回待处理或复查中", errors.New("follow-up is terminal"))
 	}
 	if err := s.repo.UpdateFollowUp(id, status, advice); err != nil {
 		return nil, util.LogError(s.log, constants.LOG_ABNORMAL_METRIC_FOLLOWUP, fmt.Errorf("update follow-up: %w", err))
