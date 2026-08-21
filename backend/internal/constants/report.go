@@ -59,5 +59,6 @@ const (
 // FollowUpStatus 复查跟踪状态。
 const (
 	FollowUpPending = "pending"
+	FollowUpProcessing = "processing"
 	FollowUpDone    = "done"
 )
