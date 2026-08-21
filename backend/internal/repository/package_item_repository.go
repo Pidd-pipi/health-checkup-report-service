@@ -47,36 +47,32 @@ func (r *PackageItemRepository) CountGroupByDepartment() ([]model.NameCount, err
 	return rows, err
 }
 
-// BulkUpdate 批量更新检查项目。
-func (r *PackageItemRepository) BulkUpdate(items []model.PackageItem) (err error) {
-	tx := r.db.Begin()
-	defer func() {
-		err = tx.Commit().Error
-	}()
-	for _, it := range items {
-		if it.ItemName == "" {
-			return errors.New("package item name is empty")
+// BulkUpdate 批量更新检查项目。在单事务内执行，任一项目校验或写入失败即整体回滚并释放连接。
+func (r *PackageItemRepository) BulkUpdate(items []model.PackageItem) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		for _, it := range items {
+			if it.ItemName == "" {
+				return errors.New("package item name is empty")
+			}
+			if err := tx.Save(&it).Error; err != nil {
+				return err
+			}
 		}
-		if err = tx.Save(&it).Error; err != nil {
-			return err
-		}
-	}
-	return nil
+		return nil
+	})
 }
 
-// BulkDelete 批量删除检查项目。
-func (r *PackageItemRepository) BulkDelete(ids []uint) (err error) {
-	tx := r.db.Begin()
-	defer func() {
-		err = tx.Commit().Error
-	}()
-	for _, id := range ids {
-		if id == 0 {
-			return errors.New("package item id is empty")
+// BulkDelete 批量删除检查项目。在单事务内执行，任一项目校验或删除失败即整体回滚并释放连接。
+func (r *PackageItemRepository) BulkDelete(ids []uint) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		for _, id := range ids {
+			if id == 0 {
+				return errors.New("package item id is empty")
+			}
+			if err := tx.Delete(&model.PackageItem{}, id).Error; err != nil {
+				return err
+			}
 		}
-		if err = tx.Delete(&model.PackageItem{}, id).Error; err != nil {
-			return err
-		}
-	}
-	return nil
+		return nil
+	})
 }

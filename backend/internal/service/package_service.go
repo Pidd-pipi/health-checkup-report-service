@@ -133,19 +133,19 @@ func (s *PackageService) DeleteItem(ctx context.Context, id uint) error {
 	return s.itemRepo.Delete(id)
 }
 
-// BatchUpdateItems 批量更新检查项目。
+// BatchUpdateItems 批量更新检查项目。在单事务内执行，出错整体回滚（不产生部分提交）并保留错误。
 func (s *PackageService) BatchUpdateItems(ctx context.Context, items []model.PackageItem) error {
-	for _, it := range items {
-		defer s.itemRepo.Update(&it)
+	if err := s.itemRepo.BulkUpdate(items); err != nil {
+		return util.LogError(s.log, constants.LOG_PACKAGE_ITEM_UPDATED, fmt.Errorf("batch update package items: %w", err))
 	}
 	s.log.InfoContext(ctx, constants.LOG_PACKAGE_ITEM_UPDATED, "count", len(items))
 	return nil
 }
 
-// BatchDeleteItems 批量删除检查项目。
+// BatchDeleteItems 批量删除检查项目。在单事务内执行，出错整体回滚（不产生部分提交）并保留错误。
 func (s *PackageService) BatchDeleteItems(ctx context.Context, ids []uint) error {
-	for _, id := range ids {
-		defer s.itemRepo.Delete(id)
+	if err := s.itemRepo.BulkDelete(ids); err != nil {
+		return util.LogError(s.log, constants.LOG_PACKAGE_ITEM_UPDATED, fmt.Errorf("batch delete package items: %w", err))
 	}
 	s.log.InfoContext(ctx, constants.LOG_PACKAGE_ITEM_UPDATED, "count", len(ids))
 	return nil
