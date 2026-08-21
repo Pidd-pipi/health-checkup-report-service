@@ -78,7 +78,7 @@ func (s *RegistrationService) Register(ctx context.Context, examineeID, packageI
 
 // List 分页查询登记。
 func (s *RegistrationService) List(ctx context.Context, status string, page, pageSize int) ([]model.Registration, int64, error) {
-	return s.repo.List(status, page, pageSize)
+	return s.repo.List(ctx, status, page, pageSize)
 }
 
 // Get 查询登记详情。
@@ -99,7 +99,7 @@ func (s *RegistrationService) UpdateStatus(ctx context.Context, id uint, status 
 	if !valid[status] {
 		return util.BadRequest("登记状态（Registration.status）不合法", errors.New("invalid status"))
 	}
-	if err := s.repo.UpdateStatus(id, status); err != nil {
+	if err := s.repo.UpdateStatus(ctx, id, status); err != nil {
 		return util.LogError(s.log, constants.LOG_REGISTRATION_STATUS_CHANGED, fmt.Errorf("update registration status: %w", err))
 	}
 	s.log.InfoContext(ctx, constants.LOG_REGISTRATION_STATUS_CHANGED, "registration_id", id, "status", status)

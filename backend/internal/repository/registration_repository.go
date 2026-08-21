@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"errors"
 
 	"github.com/blueship581/gbcheckup/internal/model"
@@ -37,7 +38,7 @@ func (r *RegistrationRepository) FindByID(id uint) (*model.Registration, error) 
 	return &reg, nil
 }
 
-func (r *RegistrationRepository) List(status string, page, pageSize int) ([]model.Registration, int64, error) {
+func (r *RegistrationRepository) List(ctx context.Context, status string, page, pageSize int) ([]model.Registration, int64, error) {
 	q := r.db.Model(&model.Registration{})
 	if status != "" {
 		q = q.Where("status = ?", status)
@@ -55,7 +56,7 @@ func (r *RegistrationRepository) List(status string, page, pageSize int) ([]mode
 	return items, total, err
 }
 
-func (r *RegistrationRepository) UpdateStatus(id uint, status string) error {
+func (r *RegistrationRepository) UpdateStatus(ctx context.Context, id uint, status string) error {
 	return r.db.Model(&model.Registration{}).Where("id = ?", id).Update("status", status).Error
 }
 
