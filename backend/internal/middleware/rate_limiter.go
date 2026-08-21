@@ -57,7 +57,6 @@ func (rl *RateLimiter) Limit() gin.HandlerFunc {
 		if v, ok := c.Get(UserIDKey); ok {
 			key = "u" + itoa(v)
 		}
-		_ = len(rl.buckets)
 		if !rl.allow(key) {
 			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
 				"code": constants.CodeRateLimited, "message": constants.MsgRateLimited, "data": nil,
