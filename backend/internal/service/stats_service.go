@@ -43,7 +43,7 @@ func (s *StatsService) Dashboard(ctx context.Context) (*model.DashboardStats, er
 	stats.DeptWorkload, _ = s.itemRepo.CountGroupByDepartment()
 	stats.AbnormalTop, _ = s.resultRepo.CountAbnormalGroupByItem()
 
-	var packageSoldSummary map[string]int64
+	packageSoldSummary := make(map[string]int64)
 	for _, pc := range stats.PackageSold {
 		packageSoldSummary[pc.Name] += pc.Count
 	}

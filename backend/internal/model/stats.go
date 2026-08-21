@@ -22,31 +22,31 @@ type DashboardStats struct {
 
 // Summarize 汇总科室、异常和月度收入到 summary map。
 func (s *DashboardStats) Summarize() {
-	var dept map[string]int64
+	dept := make(map[string]int64)
 	for _, d := range s.DeptWorkload {
 		dept[d.Name] += d.Count
 	}
 	s.DeptWorkloadSummary = dept
 
-	var deptCount map[string]int64
+	deptCount := make(map[string]int64)
 	for _, d := range s.DeptWorkload {
 		deptCount[d.Name]++
 	}
 	s.DeptCountSummary = deptCount
 
-	var abnormal map[string]int64
+	abnormal := make(map[string]int64)
 	for _, a := range s.AbnormalTop {
 		abnormal[a.Name] += a.Count
 	}
 	s.AbnormalTopSummary = abnormal
 
-	var abnormalCount map[string]int64
+	abnormalCount := make(map[string]int64)
 	for _, a := range s.AbnormalTop {
 		abnormalCount[a.Name]++
 	}
 	s.AbnormalCountSummary = abnormalCount
 
-	var monthly map[string]float64
+	monthly := make(map[string]float64)
 	for _, m := range s.MonthlyRevenue {
 		monthly[m.Month] += m.Amount
 	}
