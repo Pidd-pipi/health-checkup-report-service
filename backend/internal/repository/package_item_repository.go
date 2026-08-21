@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/blueship581/gbcheckup/internal/model"
 	"gorm.io/gorm"
 )
@@ -43,4 +45,38 @@ func (r *PackageItemRepository) CountGroupByDepartment() ([]model.NameCount, err
 	var rows []model.NameCount
 	err := r.db.Model(&model.PackageItem{}).Select("department as name, count(*) as count").Group("department").Scan(&rows).Error
 	return rows, err
+}
+
+// BulkUpdate 批量更新检查项目。
+func (r *PackageItemRepository) BulkUpdate(items []model.PackageItem) (err error) {
+	tx := r.db.Begin()
+	defer func() {
+		err = tx.Commit().Error
+	}()
+	for _, it := range items {
+		if it.ItemName == "" {
+			return errors.New("package item name is empty")
+		}
+		if err = tx.Save(&it).Error; err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// BulkDelete 批量删除检查项目。
+func (r *PackageItemRepository) BulkDelete(ids []uint) (err error) {
+	tx := r.db.Begin()
+	defer func() {
+		err = tx.Commit().Error
+	}()
+	for _, id := range ids {
+		if id == 0 {
+			return errors.New("package item id is empty")
+		}
+		if err = tx.Delete(&model.PackageItem{}, id).Error; err != nil {
+			return err
+		}
+	}
+	return nil
 }
