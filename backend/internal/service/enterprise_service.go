@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 
@@ -44,7 +45,7 @@ func (s *EnterpriseService) CreateOrder(ctx context.Context, enterpriseID, packa
 		return nil, util.NotFoundError("团检企业（Enterprise）不存在", err)
 	}
 	if _, err := s.pkgRepo.FindByID(packageID); err != nil {
-		return nil, util.InternalError("查询体检套餐失败", err)
+		return nil, util.NotFoundError(constants.MsgPackageNotFound, err)
 	}
 	order := &model.GroupOrder{EnterpriseID: enterpriseID, PackageID: packageID, ExamineeCount: count, Status: constants.GroupOrderPending}
 	if err := s.orderRepo.Create(order); err != nil {
@@ -63,7 +64,13 @@ func (s *EnterpriseService) ListOrders(ctx context.Context, page, pageSize int) 
 func (s *EnterpriseService) DeliverReports(ctx context.Context, orderID uint) (*model.GroupOrder, error) {
 	order, err := s.orderRepo.FindByID(orderID)
 	if err != nil {
+		if errors.Is(err, util.ErrNotFound) {
+			return nil, util.NotFoundError("团检订单（GroupOrder）不存在", err)
+		}
 		return nil, util.InternalError("查询团检订单失败", err)
+	}
+	if order.Status == constants.GroupOrderDone {
+		return nil, util.ConflictError("团检订单（GroupOrder）报告已交付", errors.New("status already done"))
 	}
 	order.ReportDeliveryStatus = "delivered"
 	order.Status = constants.GroupOrderDone
