@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"errors"
 
 	"github.com/blueship581/gbcheckup/internal/model"
@@ -14,9 +15,9 @@ type ExamineeRepository struct{ db *gorm.DB }
 // NewExamineeRepository 构造体检人仓储。
 func NewExamineeRepository(db *gorm.DB) *ExamineeRepository { return &ExamineeRepository{db: db} }
 
-func (r *ExamineeRepository) Create(e *model.Examinee) error { return r.db.Create(e).Error }
+func (r *ExamineeRepository) Create(ctx context.Context, e *model.Examinee) error { return r.db.Create(e).Error }
 
-func (r *ExamineeRepository) CreateBatch(items []model.Examinee) error {
+func (r *ExamineeRepository) CreateBatch(ctx context.Context, items []model.Examinee) error {
 	if len(items) == 0 {
 		return nil
 	}

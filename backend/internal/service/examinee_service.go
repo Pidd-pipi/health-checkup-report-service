@@ -30,7 +30,7 @@ func (s *ExamineeService) Create(ctx context.Context, e *model.Examinee) (*model
 	if existing, err := s.repo.FindByIDCard(e.IDCardNo); err == nil && existing != nil {
 		return nil, util.ConflictError("身份证号（Examinee.id_card_no）已存在", errors.New("duplicate id card"))
 	}
-	if err := s.repo.Create(e); err != nil {
+	if err := s.repo.Create(ctx, e); err != nil {
 		return nil, util.LogError(s.log, constants.LOG_EXAMINEE_CREATED, fmt.Errorf("create examinee: %w", err))
 	}
 	s.log.InfoContext(ctx, constants.LOG_EXAMINEE_CREATED, "examinee_id", e.ID)
@@ -87,10 +87,10 @@ func (s *ExamineeService) BatchImport(ctx context.Context, enterpriseID *uint, c
 		if existing, err := s.repo.FindByIDCard(idCard); err == nil && existing != nil {
 			continue
 		}
-		if err := s.repo.Create(e); err != nil {
-			return 0, nil, util.LogError(s.log, constants.LOG_EXAMINEE_IMPORTED, fmt.Errorf("import examinee: %w", err))
-		}
 		created = append(created, *e)
+	}
+	if err := s.repo.CreateBatch(ctx, created); err != nil {
+		return 0, nil, util.LogError(s.log, constants.LOG_EXAMINEE_IMPORTED, fmt.Errorf("import examinee: %w", err))
 	}
 	s.log.InfoContext(ctx, constants.LOG_EXAMINEE_IMPORTED, "imported", len(created))
 	return len(created), created, nil
