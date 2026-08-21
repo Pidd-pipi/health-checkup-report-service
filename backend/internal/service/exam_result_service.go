@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"strconv"
@@ -40,10 +39,7 @@ type EnterInput struct {
 func (s *ExamResultService) Enter(ctx context.Context, resultID, doctorID uint, input EnterInput) (*model.ExamResult, error) {
 	res, err := s.repo.FindByID(resultID)
 	if err != nil {
-		if errors.Is(err, util.ErrNotFound) {
-			return nil, util.NotFoundError(constants.MsgResultNotFound, err)
-		}
-		return nil, err
+		return nil, util.InternalError("查询检查结果失败", err)
 	}
 	res.ResultValue = input.ResultValue
 	res.ResultText = input.ResultText
@@ -85,7 +81,7 @@ func (s *ExamResultService) Enter(ctx context.Context, resultID, doctorID uint, 
 func (s *ExamResultService) Review(ctx context.Context, resultID uint) error {
 	res, err := s.repo.FindByID(resultID)
 	if err != nil {
-		return util.NotFoundError(constants.MsgResultNotFound, err)
+		return util.InternalError("查询检查结果失败", err)
 	}
 	res.Status = constants.ResultReviewed
 	if err := s.repo.Update(res); err != nil {
@@ -116,7 +112,6 @@ func IsAbnormal(refRange, value string) bool {
 	if err != nil {
 		return false
 	}
-	// 范围 10-20
 	if idx := strings.Index(refRange, "-"); idx > 0 && !strings.Contains(refRange, ">") && !strings.Contains(refRange, "<") {
 		lo, err1 := strconv.ParseFloat(strings.TrimSpace(refRange[:idx]), 64)
 		hi, err2 := strconv.ParseFloat(strings.TrimSpace(refRange[idx+1:]), 64)
@@ -124,7 +119,6 @@ func IsAbnormal(refRange, value string) bool {
 			return v < lo || v > hi
 		}
 	}
-	// >10 或 <5
 	if strings.HasPrefix(refRange, ">") {
 		if lim, err := strconv.ParseFloat(strings.TrimSpace(strings.TrimPrefix(refRange, ">")), 64); err == nil {
 			return v <= lim
